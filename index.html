@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Eroica Ride Calendar</title>
+<style>
+:root{--ink:#26251f;--paper:#f5f1e8;--card:#fffdf7;--muted:#706c61;--line:#d8d0c1;--classic:#8b3f2f;--nova:#295f58;--accent:#b68a45}
+*{box-sizing:border-box} body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}
+header{padding:36px max(20px,5vw) 22px;border-bottom:1px solid var(--line);background:linear-gradient(135deg,#f8f3e8,#ece4d4)}
+h1{margin:0;font-family:Georgia,serif;font-size:clamp(32px,5vw,58px);font-weight:500;letter-spacing:-.03em}
+.subtitle{max-width:760px;color:var(--muted);font-size:17px;margin:9px 0 0}
+.controls{display:flex;flex-wrap:wrap;gap:10px;padding:18px max(20px,5vw);position:sticky;top:0;z-index:5;background:rgba(245,241,232,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+button,select{border:1px solid var(--line);background:var(--card);padding:9px 13px;border-radius:999px;color:var(--ink);font:inherit;cursor:pointer}
+button.active{background:var(--ink);color:white;border-color:var(--ink)}
+main{padding:24px max(20px,5vw) 60px} .year-title{font:500 27px Georgia,serif;margin:28px 0 14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(285px,1fr));gap:15px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:17px;box-shadow:0 2px 8px #00000009}
+.top{display:flex;gap:12px;align-items:flex-start} .datebox{width:58px;min-width:58px;text-align:center;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.datebox .m{display:block;background:#e9e1d1;padding:3px;font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+.datebox .d{display:block;font:24px Georgia,serif;padding:6px 2px}
+h2{font:500 21px Georgia,serif;margin:0 0 3px} .location{color:var(--muted);font-size:13px}
+.badge{display:inline-block;margin-top:9px;padding:3px 8px;border-radius:999px;color:white;font-size:11px;letter-spacing:.05em;text-transform:uppercase}
+.Classic{background:var(--classic)} .Nova{background:var(--nova)} .weather{margin-top:15px;border-top:1px solid var(--line);padding-top:13px}
+.weatherrow{display:flex;justify-content:space-between;gap:10px;margin-bottom:6px} .temps{font-weight:650} .rain{color:var(--muted)}
+.weather p{margin:5px 0 0;color:var(--muted);font-size:13px} .actions{display:flex;justify-content:space-between;align-items:center;margin-top:14px}
+a{color:var(--ink);font-weight:650;text-decoration-thickness:1px;text-underline-offset:3px} .status{font-size:11px;color:var(--muted)}
+.note{max-width:780px;margin-top:28px;padding:15px;border-left:4px solid var(--accent);background:#fff9eb;color:var(--muted)}
+.hidden{display:none!important}
+@media(max-width:520px){header{padding-top:25px} .controls{position:static}}
+</style>
+</head>
+<body>
+<header>
+<h1>Eroica Ride Calendar</h1>
+<p class="subtitle">A simplified overview of the Classic and Nova Eroica events currently linked in the Eroica site footer, paired with typical seasonal riding conditions.</p>
+</header>
+<div class="controls">
+<button class="active" data-filter="All">All rides</button>
+<button data-filter="Classic">Classic</button>
+<button data-filter="Nova">Nova</button>
+<select id="year"><option value="All">All published years</option><option value="2026">2026</option><option value="2027">2027</option><option value="TBD">Date TBD</option></select>
+</div>
+<main id="app"></main>
+<script>
+const events=[{"name": "Nova Eroica Buonconvento", "type": "Nova", "start": "2027-04-11", "end": "2027-04-11", "location": "Buonconvento, Tuscany, Italy", "month": "April", "high": 65, "low": 45, "rain": "Moderate", "weather": "Cool mornings, mild afternoons; spring showers and muddy white roads are possible.", "url": "https://www.eroica.cc/en/events/nova-eroica-buonconvento/", "status": "Published for 2027"}, {"name": "Nova Eroica Prosecco Hills", "type": "Nova", "start": "2026-04-26", "end": "2026-04-26", "location": "Conegliano–Valdobbiadene, Veneto, Italy", "month": "April", "high": 65, "low": 47, "rain": "Moderate–high", "weather": "Mild but changeable; expect a meaningful chance of rain on exposed vineyard roads.", "url": "https://www.eroica.cc/en/events/nova-eroica-prosecco-hills/", "status": "Published"}, {"name": "Eroica Montalcino", "type": "Classic", "start": "2027-05-30", "end": "2027-05-30", "location": "Montalcino, Tuscany, Italy", "month": "May", "high": 75, "low": 53, "rain": "Moderate", "weather": "Warm riding weather with cool starts; scattered late-spring showers remain possible.", "url": "https://www.eroica.cc/en/events/eroica-montalcino/", "status": "Published for 2027"}, {"name": "Eroica Valkenburg", "type": "Classic", "start": "2026-06-05", "end": "2026-06-06", "location": "Valkenburg, Limburg, Netherlands", "month": "June", "high": 69, "low": 52, "rain": "Moderate", "weather": "Comfortably mild, but showers and damp gravel or cobbles are common possibilities.", "url": "https://www.eroica.cc/en/events/eroica-valkenburg/", "status": "Published"}, {"name": "Nova Eroica Gran Sasso", "type": "Nova", "start": "2026-06-05", "end": "2026-06-07", "location": "Castel del Monte, Abruzzo, Italy", "month": "June", "high": 68, "low": 47, "rain": "Moderate", "weather": "Mountain conditions: cool starts, strong sun, wind and fast-changing showers.", "url": "https://www.eroica.cc/en/events/nova-eroica-gran-sasso/", "status": "Published"}, {"name": "Nova Eroica Svizzera", "type": "Nova", "start": "2026-06-13", "end": "2026-06-13", "location": "Valposchiavo, Graubünden, Switzerland", "month": "June", "high": 68, "low": 46, "rain": "Moderate", "weather": "Alpine variability; pleasant valleys, colder climbs, wind and afternoon storms possible.", "url": "https://www.eroica.cc/en/events/nova-eroica-svizzera/", "status": "Published"}, {"name": "Eroica Germania", "type": "Classic", "start": "2026-08-22", "end": "2026-08-22", "location": "Eltville, Rheingau, Germany", "month": "August", "high": 78, "low": 58, "rain": "Moderate", "weather": "Usually warm and humid; thunderstorms or showers can interrupt otherwise good riding.", "url": "https://www.eroica.cc/en/events/germania/", "status": "Published"}, {"name": "Eroica Dolomiti", "type": "Classic", "start": "2026-09-04", "end": "2026-09-06", "location": "San Candido, South Tyrol, Italy", "month": "September", "high": 64, "low": 43, "rain": "Moderate", "weather": "Crisp alpine mornings and mild afternoons; high passes can be much colder and wet.", "url": "https://www.eroica.cc/en/events/eroica-dolomiti/", "status": "Published"}, {"name": "Nova Eroica Ivrea", "type": "Nova", "start": "2026-09-12", "end": "2026-09-13", "location": "Ivrea, Piedmont, Italy", "month": "September", "high": 73, "low": 54, "rain": "Moderate", "weather": "Warm afternoons and cooler mornings; late-summer storms remain possible.", "url": "https://www.eroica.cc/en/events/nova-eroica-ivrea/", "status": "Published"}, {"name": "L’Eroica", "type": "Classic", "start": "2026-10-03", "end": "2026-10-04", "location": "Gaiole in Chianti, Tuscany, Italy", "month": "October", "high": 68, "low": 49, "rain": "Moderate–high", "weather": "Cooler and wetter than summer; rain can make the strade bianche significantly tougher.", "url": "https://www.eroica.cc/en/events/leroica/", "status": "Published"}, {"name": "Eroica Japan", "type": "Classic", "start": "2026-10-31", "end": "2026-11-01", "location": "Hitachinaka, Ibaraki, Japan", "month": "Oct–Nov", "high": 66, "low": 48, "rain": "Moderate", "weather": "Generally mild and drier than early autumn; coastal wind and occasional rain are possible.", "url": "https://www.eroica.cc/en/events/eroica-japan/", "status": "Published"}, {"name": "Nova Eroica Istria", "type": "Nova", "start": null, "end": null, "location": "Istria, Croatia", "month": "TBD", "high": null, "low": null, "rain": "TBD", "weather": "The footer link currently redirects to the general site, so no current date is shown.", "url": "https://www.eroica.cc/en/events/nova-eroica-istria/", "status": "Date not currently published"}];
+let typeFilter='All', yearFilter='All';
+const fmt=d=>new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+function dateParts(e){
+ if(!e.start) return {m:'TBD',d:'—',full:'Date not published'};
+ const s=new Date(e.start+'T12:00:00'), en=new Date(e.end+'T12:00:00');
+ return {m:s.toLocaleDateString('en-US',{month:'short'}),d:s.getDate(),full:e.start===e.end?fmt(e.start):fmt(e.start)+' – '+fmt(e.end)};
+}
+function render(){
+ const app=document.querySelector('#app'); app.innerHTML='';
+ const filtered=events.filter(e=>(typeFilter==='All'||e.type===typeFilter)&&(yearFilter==='All'||(e.start?e.start.slice(0,4):'TBD')===yearFilter));
+ const groups={};
+ filtered.forEach(e=>{const y=e.start?e.start.slice(0,4):'Date TBD';(groups[y]??=[]).push(e)});
+ Object.keys(groups).sort().forEach(y=>{
+  const h=document.createElement('h3');h.className='year-title';h.textContent=y;app.appendChild(h);
+  const grid=document.createElement('div');grid.className='grid';
+  groups[y].sort((a,b)=>(a.start||'9999').localeCompare(b.start||'9999')).forEach(e=>{
+   const dp=dateParts(e), card=document.createElement('article');card.className='card';
+   card.innerHTML=`<div class="top"><div class="datebox"><span class="m">${dp.m}</span><span class="d">${dp.d}</span></div>
+   <div><h2>${e.name}</h2><div class="location">${e.location} · ${dp.full}</div><span class="badge ${e.type}">${e.type}</span></div></div>
+   <div class="weather"><div class="weatherrow"><span class="temps">${e.high?`Typical ${e.high}° / ${e.low}°F`:'Typical weather TBD'}</span><span class="rain">Rain: ${e.rain}</span></div><p>${e.weather}</p></div>
+   <div class="actions"><a href="${e.url}" target="_blank" rel="noopener">Event page ↗</a><span class="status">${e.status}</span></div>`;
+   grid.appendChild(card);
+  });
+  app.appendChild(grid);
+ });
+ const note=document.createElement('div');note.className='note';note.innerHTML='<strong>Weather note:</strong> These are broad seasonal planning ranges, not forecasts. Elevation, wind and local terrain can make ride-day conditions substantially cooler, wetter or hotter.';app.appendChild(note);
+}
+document.querySelectorAll('button[data-filter]').forEach(b=>b.onclick=()=>{document.querySelectorAll('button[data-filter]').forEach(x=>x.classList.remove('active'));b.classList.add('active');typeFilter=b.dataset.filter;render()});
+document.querySelector('#year').onchange=e=>{yearFilter=e.target.value;render()};
+render();
+</script>
+</body></html>
